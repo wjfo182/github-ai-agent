@@ -1,0 +1,21 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Repositórios clonados
+workspace/
+
+# Configuração privada
+config/authorized_repositories.json
+
+# Credenciais
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+
