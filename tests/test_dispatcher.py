@@ -109,18 +109,25 @@ def test_executa_somente_executor_registrado(
         )
 
     monkeypatch.setitem(
-        dispatcher.EXECUTORES,
-        "melhorar_readme",
-        executor_falso,
-    )
+    dispatcher.EXECUTORES,
+    "melhorar_readme",
+    executor_falso,
+)
+
+# NOVO: simular autorização apenas neste teste
+    monkeypatch.setattr(
+    dispatcher,
+    "exigir_repositorio_autorizado",
+    lambda nome: True,
+)
 
     proposta = criar_proposta()
 
     dispatcher.executar_acao_proposta(
-        REPOSITORIO,
-        {},
-        proposta,
-    )
+    REPOSITORIO,
+    {},
+    proposta,
+)
 
     assert chamadas == [
         (
