@@ -155,9 +155,13 @@ def verificar_prontidao(
 
         registrar(
             "Configuração de permissões",
-            "FALHA",
-            "Arquivo de autorização ausente.",
-        )
+            "AVISO",
+        (
+            "Configuração local ainda não criada. "
+            "Nenhum repositório deve estar autorizado "
+            "até a configuração inicial."
+        ),
+    )
 
     else:
 

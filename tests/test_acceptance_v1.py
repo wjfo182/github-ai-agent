@@ -115,6 +115,12 @@ def preparar_commit(monkeypatch, repo, respostas):
 
     monkeypatch.setattr(
         commit_actions,
+        "exigir_repositorio_autorizado",
+        lambda nome: True,
+    )
+
+    monkeypatch.setattr(
+        commit_actions,
         "selecionar_repositorio",
         lambda: "aceitacao/projeto-local",
     )

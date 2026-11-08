@@ -1,5 +1,7 @@
 from app.approvals import solicitar_aprovacao
 
+from app.permissions import exigir_repositorio_autorizado
+
 from app.git_manager import (
     clonar_repositorio,
     obter_branch_atual,
@@ -11,6 +13,7 @@ from app.git_manager import (
     obter_historico_recente,
     executar_push,
     publicar_nova_branch,
+    validar_destino_origin,
 )
 
 from app.repository_selector import selecionar_repositorio
@@ -24,10 +27,23 @@ def publicar_branch_atual():
     Não utiliza force push.
     """
 
+    # 1. Selecionar o repositório
     nome_completo = selecionar_repositorio()
 
+    # 2. NOVO: exigir autorização explícita
+    exigir_repositorio_autorizado(
+        nome_completo
+    )
+
+    # 3. Somente após a autorização,
+    # acessar o repositório local
     repo = clonar_repositorio(
         nome_completo
+    )
+
+    validar_destino_origin(
+        repo,
+        nome_completo,
     )
 
     branch = obter_branch_atual(
@@ -115,6 +131,11 @@ def publicar_branch_atual():
                 "\nPublicação cancelada."
             )
             return
+
+        validar_destino_origin(
+            repo,
+            nome_completo,
+        )
 
         resultado = publicar_nova_branch(
             repo,
@@ -217,6 +238,11 @@ def publicar_branch_atual():
             "\nPublicação cancelada."
         )
         return
+
+    validar_destino_origin(
+        repo,
+        nome_completo,
+    )
 
     resultado = executar_push(
         repo,

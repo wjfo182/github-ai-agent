@@ -21,6 +21,13 @@ def preparar_commit_simulado(
     eventos = []
     respostas = iter(respostas_aprovacao)
 
+
+    monkeypatch.setattr(
+        commit_actions,
+        "exigir_repositorio_autorizado",
+        lambda nome: True,
+    )
+
     monkeypatch.setattr(
         commit_actions,
         "selecionar_repositorio",

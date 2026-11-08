@@ -16,6 +16,8 @@ from app.repository_selector import selecionar_repositorio
 
 from app.git_manager import obter_head_commit
 
+from app.permissions import exigir_repositorio_autorizado
+
 def escolher_arquivos(arquivos):
     """
     Permite escolher quais alterações serão
@@ -97,9 +99,15 @@ def criar_commit_controlado():
 
     nome_completo = selecionar_repositorio()
 
+# Verificar autorização ANTES de qualquer
+# operação sobre o repositório.
+    exigir_repositorio_autorizado(
+        nome_completo
+)
+
     repo = clonar_repositorio(
         nome_completo
-    )
+)
 
     branch = obter_branch_atual(repo)
 

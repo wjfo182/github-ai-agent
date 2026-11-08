@@ -27,6 +27,8 @@ from app.structure_actions import (
     executar_organizar_estrutura,
 )
 
+from app.permissions import exigir_repositorio_autorizado
+
 # Registro explícito.
 #
 # Nunca use eval(), exec(), getattr() baseado
@@ -69,6 +71,10 @@ def executar_acao_proposta(
     analise,
     proposta,
 ):
+
+    exigir_repositorio_autorizado(
+    nome_completo
+)
     """
     Encaminha uma ação validada para um executor
     registrado explicitamente.

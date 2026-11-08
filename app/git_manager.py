@@ -1306,3 +1306,164 @@ def obter_head_commit(diretorio_repositorio):
 
     return resultado.stdout.strip()
 
+def validar_destino_origin(
+    diretorio_repositorio,
+    nome_completo,
+):
+    """
+    Confirma que origin corresponde exatamente
+    ao repositório GitHub autorizado.
+
+    Aceita:
+    - HTTPS
+    - SSH no formato git@github.com
+    - SSH no formato ssh://git@github.com
+
+    Bloqueia:
+    - outros hosts;
+    - outros repositórios;
+    - destinos de push múltiplos;
+    - ausência de origin.
+
+    Não realiza push.
+    """
+
+    import re
+    import subprocess
+
+    padrao_nome = (
+        r"[A-Za-z0-9-]+/[A-Za-z0-9_.-]+"
+    )
+
+    if (
+        not isinstance(nome_completo, str)
+        or not re.fullmatch(
+            padrao_nome,
+            nome_completo,
+        )
+    ):
+        raise RuntimeError(
+            "Nome do repositório inválido."
+        )
+
+    def identificar_repositorio(url):
+        url = url.strip()
+
+        padrao_url = (
+            r"(?:"
+            r"https://github\.com/"
+            r"|git@github\.com:"
+            r"|ssh://git@github\.com/"
+            r")"
+            r"([A-Za-z0-9-]+)"
+            r"/"
+            r"([A-Za-z0-9_.-]+)"
+        )
+
+        encontrado = re.fullmatch(
+            padrao_url,
+            url,
+            flags=re.IGNORECASE,
+        )
+
+        if encontrado is None:
+            raise RuntimeError(
+                "URL remota não permitida: "
+                "esperado um repositório github.com."
+            )
+
+        proprietario = encontrado.group(1)
+        repositorio = encontrado.group(2)
+
+        if repositorio.lower().endswith(".git"):
+            repositorio = repositorio[:-4]
+
+        if not repositorio:
+            raise RuntimeError(
+                "Nome de repositório remoto inválido."
+            )
+
+        return (
+            f"{proprietario}/{repositorio}"
+        ).casefold()
+
+    def consultar_urls(push=False):
+        comando = [
+            "git",
+            "-C",
+            str(diretorio_repositorio),
+            "remote",
+            "get-url",
+        ]
+
+        if push:
+            comando.append("--push")
+
+        comando.extend([
+            "--all",
+            "origin",
+        ])
+
+        try:
+            resultado = subprocess.run(
+                comando,
+                capture_output=True,
+                text=True,
+                timeout=10,
+                check=False,
+            )
+
+        except (
+            OSError,
+            subprocess.TimeoutExpired,
+        ) as erro:
+            raise RuntimeError(
+                "Não foi possível consultar origin."
+            ) from erro
+
+        if resultado.returncode != 0:
+            raise RuntimeError(
+                "Remoto origin não encontrado "
+                "ou inválido."
+            )
+
+        urls = [
+            linha.strip()
+            for linha in resultado.stdout.splitlines()
+            if linha.strip()
+        ]
+
+        if len(urls) != 1:
+            raise RuntimeError(
+                "Origin possui múltiplos destinos "
+                "ou uma configuração ambígua."
+            )
+
+        return urls[0]
+
+    esperado = nome_completo.casefold()
+
+    # Verificar URL utilizada para consultas.
+    url_fetch = consultar_urls(
+        push=False
+    )
+
+    # Verificar URL efetiva utilizada pelo push.
+    # Ela pode ser diferente da URL de fetch.
+    url_push = consultar_urls(
+        push=True
+    )
+
+    for url in (url_fetch, url_push):
+
+        identificado = identificar_repositorio(
+            url
+        )
+
+        if identificado != esperado:
+            raise RuntimeError(
+                "Destino remoto incompatível "
+                "com o repositório autorizado."
+            )
+
+    return True

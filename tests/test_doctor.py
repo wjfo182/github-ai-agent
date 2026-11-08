@@ -167,7 +167,7 @@ def test_configuracao_ausente(projeto):
     assert obter_item(
         resultados,
         "Configuração de permissões",
-    ).status == "FALHA"
+    ).status == "AVISO"
 
 
 # TESTE 8 - JSON inválido

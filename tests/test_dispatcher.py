@@ -31,6 +31,11 @@ def preparar_fluxo(monkeypatch, propostas):
     resultado = SimpleNamespace(
         acoes_propostas=propostas
     )
+    monkeypatch.setattr(
+        dispatcher,
+        "exigir_repositorio_autorizado",
+        lambda nome: True,
+    )
 
     monkeypatch.setattr(
         dispatcher,

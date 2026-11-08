@@ -71,6 +71,11 @@ def preparar_fluxo_real(monkeypatch, repo):
     Simula apenas a interface, seleção e
     aprovações do usuário.
     """
+    monkeypatch.setattr(
+        commit_actions,
+        "exigir_repositorio_autorizado",
+        lambda nome: True,
+    )
 
     monkeypatch.setattr(
         commit_actions,
